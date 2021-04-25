@@ -9,11 +9,11 @@ class DemoDataTest {
     fun test1() {
         val d = DemoData(
                 "",
-                "",
+                "21-03-11 星期六",
                 "",
                 "08:54",
                 "",
-                "19:23",
+                "12:23",
                 "",
                 "",
                 "",
@@ -21,6 +21,7 @@ class DemoDataTest {
         val data = d.calculate()
 
         println(data?.desc)
+        println(data?.jiaBan)
     }
     @Test
     fun test2() {

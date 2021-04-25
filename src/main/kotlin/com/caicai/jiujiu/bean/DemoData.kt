@@ -10,46 +10,63 @@ data class DemoData(
         var endResult1: String? = null, //"下班1打卡结果 11
         var startTime2: String? = null,//"上班2打卡时间 12
         var desc: String? = null,//评价
-        var jiaBan: String? = null,//加班分钟
+        var jiaBan: String? = null,//加班h
 ) {
     //标准是  8:30  - 17：30
     //弹性最大值 10:00 - 20:30  【下班考虑补时2倍】
     fun calculate(): DemoData? {
-        if (isNoEmpty(startTime1) && isNoEmpty(endTime1)) {
+        if (classNum != null && isNoEmpty(startTime1) && isNoEmpty(endTime1)) {
             val startTimes = startTime1!!.split(":")
             val endTimes = endTime1!!.split(":")
-
-            val h8 = startTimes[0].toInt()
-            val minStart = startTimes[1].toInt()
-
-            var startMinutes = h8 * 60 + minStart //8x60 + 30 = 510 分钟， 比这个早的都算8:30来的
-            if (startMinutes < 510) startMinutes = 510
-
-            val h17 = endTimes[0].toInt()
-            val minEnd = endTimes[1].toInt()
-            val endMinutes = h17 * 60 + minEnd
-
-            val chiDaoMin = startMinutes - 510//迟到分钟
-
-            val duoGanMin = endMinutes - 1050//标准17x60 + 30 = 1050 分钟,比这个晚的才是多干的时间
-
-            val jiaBanMin = duoGanMin - chiDaoMin * 2//多干的时间 - 迟到时间x2 = 可以计算加班的时间
-
-            if (jiaBanMin > 0) {
-                if (jiaBanMin > 120) {
-                    jiaBan = myFormatTime(jiaBanMin, true)
-                    desc = "加班了${myFormatTime(jiaBanMin)}！"
+            if (classNum == "休息") {  //判断放假
+                val h8 = startTimes[0].toInt()
+                val minStart = startTimes[1].toInt()
+                val startMinutes = h8 * 60 + minStart //8x60 + 30 = 510 分钟，
+                val h17 = endTimes[0].toInt()
+                val minEnd = endTimes[1].toInt()
+                val endMinutes = h17 * 60 + minEnd
+                val jiaBanMin = endMinutes - startMinutes //周末加班分钟
+                jiaBan = myFormatTime(jiaBanMin, true)
+                desc = if (jiaBanMin < 3600) {
+                    "加班已足6小时"
                 } else {
-                    desc = "虽然晚走${myFormatTime(jiaBanMin)}，但是白干"
+                    "不足6小时"
                 }
-            } else if (jiaBanMin == 0) {
-                desc = "不亏是时间管理大师"
+                return this
             } else {
-                desc = "迟到了，应该晚走${myFormatTime(-jiaBanMin)}"
+                val h8 = startTimes[0].toInt()
+                val minStart = startTimes[1].toInt()
+                var startMinutes = h8 * 60 + minStart //8x60 + 30 = 510 分钟， 比这个早的都算8:30来的
+                if (startMinutes < 510) startMinutes = 510
+
+                val h17 = endTimes[0].toInt()
+                val minEnd = endTimes[1].toInt()
+                val endMinutes = h17 * 60 + minEnd
+
+                val chiDaoMin = startMinutes - 510//迟到分钟
+
+                val duoGanMin = endMinutes - 1050//标准17x60 + 30 = 1050 分钟,比这个晚的才是多干的时间
+
+                val jiaBanMin = duoGanMin - chiDaoMin * 2//多干的时间 - 迟到时间x2 = 可以计算加班的时间
+
+                if (jiaBanMin > 0) {
+                    if (jiaBanMin >= 120) {
+                        val jiaBanHours = Math.floorDiv(jiaBanMin, 60)//加班小时数 2h 3h 4h 5h ...
+                        jiaBan = "${2 * Math.floorDiv(jiaBanHours, 2)}小时"//1 1 2 2 ...
+                        desc = "有效加班时间：$jiaBan"
+                    } else {
+                        desc = "虽然晚走${myFormatTime(jiaBanMin)}，但是白干"
+                    }
+                } else if (jiaBanMin == 0) {
+                    desc = "不亏是时间管理大师"
+                } else {
+                    desc = "迟到了，应该晚走${myFormatTime(-jiaBanMin)}"
+                }
             }
             return this
+        } else {
+            return this
         }
-        return null
     }
 
     private fun myFormatTime(min: Int, justHour: Boolean = false): String {
@@ -58,10 +75,10 @@ data class DemoData(
                 return if (justHour) "" else "${min}分钟"
             }
             min % 60 == 0 -> {
-                return if (justHour) Math.floorDiv(min, 60).toString() else "${min}分钟 = ${Math.floorDiv(min, 60)}小时"
+                return if (justHour) "${Math.floorDiv(min, 60)}小时" else "${min}分钟 = ${Math.floorDiv(min, 60)}小时"
             }
             else -> {
-                return if (justHour) Math.floorDiv(min, 60).toString() else "${min}分钟 = ${Math.floorDiv(min, 60)}小时${min % 60}分钟"
+                return if (justHour) "${Math.floorDiv(min, 60)}小时" else "${min}分钟 = ${Math.floorDiv(min, 60)}小时${min % 60}分钟"
             }
         }
     }
