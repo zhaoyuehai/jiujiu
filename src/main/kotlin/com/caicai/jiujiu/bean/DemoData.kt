@@ -1,20 +1,20 @@
 package com.caicai.jiujiu.bean
 
 data class DemoData(
-        var name: String? = null,//姓名 0
-        var date: String? = null,//日期 6
-        var classNum: String? = null, //班次 7
-        var startTime1: String? = null, //上班1打卡时间 8
-        var startResult1: String? = null, //"上班1打卡结果 9
-        var endTime1: String? = null,//"下班1打卡时间 10
-        var endResult1: String? = null, //"下班1打卡结果 11
-        var startTime2: String? = null,//"上班2打卡时间 12
-        var desc: String? = null,//评价
-        var jiaBan: String? = null,//加班h
+    var name: String? = null,//姓名 0
+    var date: String? = null,//日期 6
+    var classNum: String? = null, //班次 7
+    var startTime1: String? = null, //上班1打卡时间 8
+    var startResult1: String? = null, //"上班1打卡结果 9
+    var endTime1: String? = null,//"下班1打卡时间 10
+    var endResult1: String? = null, //"下班1打卡结果 11
+    var startTime2: String? = null,//"上班2打卡时间 12
+    var desc: String? = null,//评价
+    var jiaBan: String? = null,//加班h
 ) {
     //标准是  8:30  - 17：30
     //弹性最大值 10:00 - 20:30  【下班考虑补时2倍】
-    fun calculate(): DemoData? {
+    fun calculate(): DemoData {
         if (classNum != null && isNoEmpty(startTime1) && isNoEmpty(endTime1)) {
             val startTimes = startTime1!!.split(":")
             val endTimes = endTime1!!.split(":")
@@ -53,9 +53,9 @@ data class DemoData(
                     if (jiaBanMin >= 120) {
                         val jiaBanHours = Math.floorDiv(jiaBanMin, 60)//加班小时数 2h 3h 4h 5h ...
                         jiaBan = "${2 * Math.floorDiv(jiaBanHours, 2)}小时"//1 1 2 2 ...
-                        desc = "有效加班时间：$jiaBan"
+                        desc = "【有效加班$jiaBan】 实际干了${myFormatTime(jiaBanMin)}"
                     } else {
-                        desc = "虽然晚走${myFormatTime(jiaBanMin)}，但是白干"
+                        desc = "白干了${myFormatTime(jiaBanMin)}"
                     }
                 } else if (jiaBanMin == 0) {
                     desc = "不亏是时间管理大师"
@@ -69,18 +69,10 @@ data class DemoData(
         }
     }
 
-    private fun myFormatTime(min: Int, justHour: Boolean = false): String {
-        when {
-            min / 60 == 0 -> {
-                return if (justHour) "" else "${min}分钟"
-            }
-            min % 60 == 0 -> {
-                return if (justHour) "${Math.floorDiv(min, 60)}小时" else "${min}分钟 = ${Math.floorDiv(min, 60)}小时"
-            }
-            else -> {
-                return if (justHour) "${Math.floorDiv(min, 60)}小时" else "${min}分钟 = ${Math.floorDiv(min, 60)}小时${min % 60}分钟"
-            }
-        }
+    private fun myFormatTime(min: Int, justHour: Boolean = false) = when {
+        min / 60 == 0 -> if (justHour) "" else "${min}分钟"
+        min % 60 == 0 -> if (justHour) "${Math.floorDiv(min, 60)}小时" else "${Math.floorDiv(min, 60)}小时"
+        else -> if (justHour) "${Math.floorDiv(min, 60)}小时" else "${Math.floorDiv(min, 60)}小时${min % 60}分钟"
     }
 
     private fun isNoEmpty(s: String?) = s != null && s.length == 5 && s.contains(":")
