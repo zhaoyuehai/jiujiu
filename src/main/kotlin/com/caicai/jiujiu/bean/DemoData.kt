@@ -28,9 +28,9 @@ data class DemoData(
                 val jiaBanMin = endMinutes - startMinutes //周末加班分钟
                 jiaBan = myFormatTime(jiaBanMin, true)
                 desc = if (jiaBanMin < 3600) {
-                    "加班已足6小时"
+                    "加班已足6小时☺"
                 } else {
-                    "不足6小时"
+                    "不足6小时🤣"
                 }
                 return this
             } else {
@@ -53,14 +53,14 @@ data class DemoData(
                     if (jiaBanMin >= 120) {
                         val jiaBanHours = Math.floorDiv(jiaBanMin, 60)//加班小时数 2h 3h 4h 5h ...
                         jiaBan = "${2 * Math.floorDiv(jiaBanHours, 2)}小时"//1 1 2 2 ...
-                        desc = "【有效加班$jiaBan】 实际干了${myFormatTime(jiaBanMin)}"
+                        desc = "【有效加班$jiaBan】🤩实际干了${myFormatTime(jiaBanMin)}"
                     } else {
-                        desc = "白干了${myFormatTime(jiaBanMin)}"
+                        desc = "白干了${myFormatTime(jiaBanMin)}😂"
                     }
                 } else if (jiaBanMin == 0) {
-                    desc = "不亏是时间管理大师"
+                    desc = "哎哟，时间管理大师😄"
                 } else {
-                    desc = "迟到了，应该晚走${myFormatTime(-jiaBanMin)}"
+                    desc = "你迟到了额🙄应该晚走${myFormatTime(-jiaBanMin)}"
                 }
             }
             return this
