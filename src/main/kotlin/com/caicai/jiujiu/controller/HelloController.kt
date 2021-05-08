@@ -4,6 +4,9 @@ import ResultUtil
 import com.caicai.jiujiu.bean.DemoData
 import com.caicai.jiujiu.bean.ResultBean
 import org.apache.poi.hssf.usermodel.HSSFWorkbook
+import org.apache.poi.ss.usermodel.Cell
+import org.apache.poi.ss.usermodel.CellType
+import org.apache.poi.ss.usermodel.DateUtil
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.util.ResourceUtils
@@ -15,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.text.SimpleDateFormat
 import java.util.*
 
 
@@ -66,7 +70,7 @@ class HelloController {
                 "1.xls" -> wb = HSSFWorkbook(FileInputStream(file))
             }
         }
-        wb?.let {//开始解析
+        wb?.let { it ->//开始解析
             val sheet = it.getSheetAt(0)     //读取sheet 0
             val firstRowIndex = sheet.firstRowNum + 4   //第一行是列名，所以不读
             val lastRowIndex = sheet.lastRowNum
@@ -78,16 +82,29 @@ class HelloController {
                     user.name = row.getCell(0).toString()
                     user.date = row.getCell(6).toString()
                     user.classNum = row.getCell(7).toString()
-                    user.startTime1 = row.getCell(8).toString()
+                    user.startTime1 = getRealTime(row.getCell(8))
                     user.startResult1 = row.getCell(9).toString()
-                    user.endTime1 = row.getCell(10).toString()
+                    user.endTime1 = getRealTime(row.getCell(10))
                     user.endResult1 = row.getCell(11).toString()
-                    user.startTime2 = row.getCell(12).toString()
-                    user.calculate()?.let { userList.add(it) }
+                    user.startTime2 = getRealTime(row.getCell(12))
+                    user.calculate().let { userList.add(it) }
                 }
             }
             return ResultUtil.success(userList)
         }
         return ResultUtil.fail("文件不存在或格式错误")
+    }
+
+    private fun getRealTime(cell: Cell?): String {
+        if (cell == null) return ""
+        if (cell.cellType == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
+            val date = cell.dateCellValue.toString()//Sun Dec 31 08:53:00 CST 1899
+            return SimpleDateFormat("HH:mm").format(
+                SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.US).parse(
+                    date
+                )
+            )
+        }
+        return cell.toString()
     }
 }
